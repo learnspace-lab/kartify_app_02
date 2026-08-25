@@ -1,4 +1,3 @@
-
 import streamlit as st
 import sqlite3
 import pandas as pd
@@ -8,9 +7,10 @@ import os
 from datetime import date
 from typing import TypedDict, List, Dict, Any
 
-from openai import OpenAI
+#from openai import OpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import StateGraph, END
-from langchain_openai import ChatOpenAI
+#from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, ToolMessage
 from langchain_core.tools import tool
 
@@ -22,20 +22,26 @@ st.set_page_config(
 )
 
 
-# Load the JSON file and extract values
-OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]       # Loading the API Key
-OPENAI_API_BASE = st.secrets["OPENAI_API_BASE"]     # Loading the API Base Url
-
-
-# Storing API credentials in environment variables
-os.environ['OPENAI_API_KEY'] = OPENAI_API_KEY
-os.environ["OPENAI_BASE_URL"] = OPENAI_API_BASE
+## Load the JSON file and extract values
+#OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]       # Loading the API Key
+#OPENAI_API_BASE = st.secrets["OPENAI_API_BASE"]     # Loading the API Base Url
+#
+## Storing API credentials in environment variables
+#os.environ['OPENAI_API_KEY'] = OPENAI_API_KEY
+#os.environ["OPENAI_BASE_URL"] = OPENAI_API_BASE
+GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+os.environ['GOOGLE_API_KEY'] = GOOGLE_API_KEY
 
 # ── LLMs ─────────────────────────────────────────────────────────────────────
+#@st.cache_resource
+#def load_llms():
+#    llm          = ChatOpenAI(model_name="gpt-4o")
+#    evaluate_llm = ChatOpenAI(model_name="gpt-4o")
+#    return llm, evaluate_llm
 @st.cache_resource
 def load_llms():
-    llm          = ChatOpenAI(model_name="gpt-4o")
-    evaluate_llm = ChatOpenAI(model_name="gpt-4o")
+    llm          = ChatGoogleGenerativeAI(model="gemini-pro")
+    evaluate_llm = ChatGoogleGenerativeAI(model="gemini-pro")
     return llm, evaluate_llm
 
 llm, evaluate_llm = load_llms()
@@ -551,8 +557,12 @@ else:
             st.session_state.order_id = ""
             st.rerun()
         st.divider()
+#        st.caption(
+#            "Powered by LangGraph · GPT-4o-mini\n\n"
+#            "Guardrails: Input intent · Output safety · Conversation monitor"
+#        )
         st.caption(
-            "Powered by LangGraph · GPT-4o-mini\n\n"
+            "Powered by LangGraph · Gemini Pro\n\n"
             "Guardrails: Input intent · Output safety · Conversation monitor"
         )
 
