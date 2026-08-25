@@ -166,8 +166,8 @@ def order_agent(query: str, order_id: str, history: list) -> tuple:
                 result = fetch_order_details.invoke(tc["args"])
                 order_context = result
                 messages.append(ToolMessage(content=result, tool_call_id=tc["id"]))
-
-    final_response = ai_msg.content.strip()
+# order_agent()
+    final_response = ai_msg.text.strip()
     for prefix in ("Final Answer:", "final answer:"):
         if final_response.lower().startswith(prefix.lower()):
             final_response = final_response[len(prefix):].strip()
@@ -209,7 +209,7 @@ Return ONLY the numeric ID (0, 1, 2, or 3). No explanation.
 3 - Random/Unrelated/Vulnerable: out-of-scope or potentially unsafe query.
 
 Query: {state['query']}"""
-    result = llm.invoke([HumanMessage(content=prompt)]).content.strip()
+    result = llm.invoke([HumanMessage(content=prompt)]).text.strip()
 
     match = re.search(r"[0-3]", result)
     intent = match.group(0) if match else "3"
@@ -258,7 +258,7 @@ Return ONLY JSON:
 }}
 """
     try:
-        raw = evaluate_llm.invoke([HumanMessage(content=prompt)]).content.strip()
+        raw = evaluate_llm.invoke([HumanMessage(content=prompt)]).text.strip()
         evaluation = extract_json_from_llm(raw)
     except Exception:
         evaluation = {"groundedness": 0.0, "precision": 0.0}
@@ -290,7 +290,7 @@ If the message contains:
 Return: BLOCK
 Otherwise, return: SAFE
 Response: {state["final_response"]}"""
-    result = evaluate_llm.invoke([HumanMessage(content=prompt)]).content.strip()
+    result = evaluate_llm.invoke([HumanMessage(content=prompt)]).text.strip()
     guard_result = result if result in ("BLOCK", "SAFE") else "SAFE"
     if guard_result == "BLOCK":
         return {
@@ -312,7 +312,7 @@ If any occur, return BLOCK. Otherwise return SAFE.
 
 Conversation:
 {state.get('history', [])}"""
-    result = evaluate_llm.invoke([HumanMessage(content=prompt)]).content.strip()
+    result = evaluate_llm.invoke([HumanMessage(content=prompt)]).text.strip()
     conv_result = result if result in ("BLOCK", "SAFE") else "SAFE"
     if conv_result == "BLOCK":
         return {
