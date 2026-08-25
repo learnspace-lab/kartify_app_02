@@ -7,7 +7,7 @@ import os
 from datetime import date
 from typing import TypedDict, List, Dict, Any
 
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, ToolMessage
 from langchain_core.tools import tool
@@ -19,18 +19,30 @@ st.set_page_config(
     layout="centered",
 )
 
-
-## Load the secrets file and extract values
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]      # Loading the API Key
-os.environ['GOOGLE_API_KEY'] = GOOGLE_API_KEY
+# ── OpenRouter credentials ─────────────────────────────────────────────────────
+# OpenRouter speaks the OpenAI-compatible API, so we use ChatOpenAI with a
+# custom base_url and the OpenRouter key instead of an OpenAI key.
+OPENROUTER_API_KEY = st.secrets["OPENROUTER_API_KEY"]
+OPENROUTER_BASE_URL = st.secrets["OPENROUTER_BASE_URL"]
 
 # ── LLMs ─────────────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_llms():
-    llm          = ChatGoogleGenerativeAI(model="gemini-3.5-flash")        # main order agent
-    evaluate_llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite")   # cheap classifier/guard model
-#    llm          = ChatGoogleGenerativeAI(model="gemini-3.5-flash")
-#    evaluate_llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash")
+    # Main order agent — needs solid reasoning + reliable tool-calling.    
+    llm          = ChatOpenAI(
+        model="nvidia/nemotron-3.5-lightning:free",
+        base_url=OPENROUTER_BASE_URL,
+        api_key=OPENROUTER_API_KEY,
+        max_retries=3,
+    )
+    
+    # Lightweight classifier / evaluation / guard calls — cheaper/faster model is fine here.    
+    evaluate_llm = ChatOpenAI(
+        model="nvidia/nemotron-3.5-lightning:free",
+        base_url=OPENROUTER_BASE_URL,
+        api_key=OPENROUTER_API_KEY,
+        max_retries=3,
+    )
     return llm, evaluate_llm
 
 llm, evaluate_llm = load_llms()
