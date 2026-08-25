@@ -26,8 +26,8 @@ os.environ["GROQ_API_KEY"] = GROQ_API_KEY
 # ── LLMs ─────────────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_llms():    
-    llm = ChatGroq(model="llama-3.3-70b-versatile", max_retries=3)
-    evaluate_llm = ChatGroq(model="llama-3.1-8b-instant", max_retries=3)
+    llm = ChatGroq(model="openai/gpt-oss-120b", max_retries=3)
+    evaluate_llm = ChatGroq(model="openai/gpt-oss-20b", max_retries=3)
     return llm, evaluate_llm
 
 llm, evaluate_llm = load_llms()
