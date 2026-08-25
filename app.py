@@ -7,7 +7,7 @@ import os
 from datetime import date
 from typing import TypedDict, List, Dict, Any
 
-from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, ToolMessage
 from langchain_core.tools import tool
@@ -19,30 +19,15 @@ st.set_page_config(
     layout="centered",
 )
 
-# ── OpenRouter credentials ─────────────────────────────────────────────────────
-# OpenRouter speaks the OpenAI-compatible API, so we use ChatOpenAI with a
-# custom base_url and the OpenRouter key instead of an OpenAI key.
-OPENROUTER_API_KEY = st.secrets["OPENROUTER_API_KEY"]
-OPENROUTER_BASE_URL = st.secrets["OPENROUTER_BASE_URL"]
+# ── Groq credentials ────────────────────────────────────────────────────────
+GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+os.environ["GROQ_API_KEY"] = GROQ_API_KEY
 
 # ── LLMs ─────────────────────────────────────────────────────────────────────
 @st.cache_resource
-def load_llms():
-    # Main order agent — needs solid reasoning + reliable tool-calling.    
-    llm          = ChatOpenAI(
-        model="nvidia/nemotron-3.5-lightning:free",
-        base_url=OPENROUTER_BASE_URL,
-        api_key=OPENROUTER_API_KEY,
-        max_retries=3,
-    )
-    
-    # Lightweight classifier / evaluation / guard calls — cheaper/faster model is fine here.    
-    evaluate_llm = ChatOpenAI(
-        model="nvidia/nemotron-3.5-lightning:free",
-        base_url=OPENROUTER_BASE_URL,
-        api_key=OPENROUTER_API_KEY,
-        max_retries=3,
-    )
+def load_llms():    
+    llm = ChatGroq(model="llama-3.3-70b-versatile", max_retries=3)
+    evaluate_llm = ChatGroq(model="llama-3.1-8b-instant", max_retries=3)
     return llm, evaluate_llm
 
 llm, evaluate_llm = load_llms()
